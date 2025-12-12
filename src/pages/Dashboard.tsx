@@ -49,7 +49,19 @@ export default function Dashboard() {
 
   const selectedSuite = testSuites.find(s => s.id === selectedSuiteId);
 
-  if (authLoading || suitesLoading) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  if (suitesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

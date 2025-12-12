@@ -11,6 +11,7 @@ export interface ApiRequest {
   method: string;
   url: string;
   headers: Record<string, string>;
+  params: Record<string, string> | null;
   body: string | null;
   variables_to_extract: Array<{ name: string; path: string }>;
   validation_expression: string | null;
@@ -35,6 +36,9 @@ function parseApiRequest(raw: any): ApiRequest {
     headers: (raw.headers && typeof raw.headers === 'object' && !Array.isArray(raw.headers)) 
       ? raw.headers as Record<string, string> 
       : {},
+    params: (raw.params && typeof raw.params === 'object' && !Array.isArray(raw.params)) 
+      ? raw.params as Record<string, string> 
+      : null,
     variables_to_extract: Array.isArray(raw.variables_to_extract) 
       ? raw.variables_to_extract as Array<{ name: string; path: string }>
       : [],
@@ -157,6 +161,7 @@ export function useTestSuites() {
     try {
       const dbUpdates: any = { ...updates };
       if (updates.headers) dbUpdates.headers = updates.headers as Json;
+      if (updates.params !== undefined) dbUpdates.params = updates.params as Json;
       if (updates.variables_to_extract) dbUpdates.variables_to_extract = updates.variables_to_extract as Json;
       
       const { error } = await supabase.from('api_requests').update(dbUpdates).eq('id', id);

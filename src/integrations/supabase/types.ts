@@ -23,6 +23,7 @@ export type Database = {
           method: string
           name: string
           order_index: number
+          params: Json | null
           test_suite_id: string
           updated_at: string
           url: string
@@ -37,6 +38,7 @@ export type Database = {
           method?: string
           name: string
           order_index?: number
+          params?: Json | null
           test_suite_id: string
           updated_at?: string
           url: string
@@ -51,6 +53,7 @@ export type Database = {
           method?: string
           name?: string
           order_index?: number
+          params?: Json | null
           test_suite_id?: string
           updated_at?: string
           url?: string

@@ -68,7 +68,18 @@ export default function Dashboard() {
     setRunningRequestId(request.id);
     setSingleResult(null);
 
-    const processedUrl = replaceVariables(request.url, {});
+    let processedUrl = replaceVariables(request.url, {});
+    
+    // Append query params to URL
+    if (request.params && Object.keys(request.params).length > 0) {
+      const searchParams = new URLSearchParams();
+      Object.entries(request.params).forEach(([key, value]) => {
+        if (key) searchParams.append(key, replaceVariables(value, {}));
+      });
+      const separator = processedUrl.includes('?') ? '&' : '?';
+      processedUrl = `${processedUrl}${separator}${searchParams.toString()}`;
+    }
+
     const processedBody = request.body ? replaceVariables(request.body, {}) : null;
 
     const headers: Record<string, string> = { ...(request.headers as Record<string, string>) };

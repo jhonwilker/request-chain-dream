@@ -10,9 +10,31 @@ import { MethodBadge } from './MethodBadge';
 import { HeadersEditor } from './HeadersEditor';
 import { ParametersEditor } from './ParametersEditor';
 import { VariablesEditor } from './VariablesEditor';
+import { ValidationsEditor } from './ValidationsEditor';
 import { ApiRequest } from '@/hooks/useTestSuites';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+// Helper to convert validation_expression (string | null) to array
+const parseValidations = (expression: string | null | undefined): string[] => {
+  if (!expression) return [];
+  // If it's already JSON array format, parse it
+  try {
+    const parsed = JSON.parse(expression);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {
+    // Not JSON, treat as single expression
+  }
+  return expression ? [expression] : [];
+};
+
+// Helper to convert array back to string for storage
+const serializeValidations = (validations: string[]): string | null => {
+  const filtered = validations.filter(v => v.trim());
+  if (filtered.length === 0) return null;
+  if (filtered.length === 1) return filtered[0];
+  return JSON.stringify(filtered);
+};
 
 interface RequestEditorProps {
   request: ApiRequest;
@@ -178,19 +200,11 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
               onChange={(variables) => updateLocal({ variables_to_extract: variables })}
             />
 
-            {/* Validation Expression */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Validation Expression</label>
-              <Input
-                value={localRequest.validation_expression || ''}
-                onChange={(e) => updateLocal({ validation_expression: e.target.value })}
-                placeholder='$.status === 200 && $.data.id !== null'
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                Use JSONPath expressions ($.data.field) and JavaScript comparison operators
-              </p>
-            </div>
+            {/* Validation Expressions */}
+            <ValidationsEditor
+              validations={parseValidations(localRequest.validation_expression)}
+              onChange={(validations) => updateLocal({ validation_expression: serializeValidations(validations) })}
+            />
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

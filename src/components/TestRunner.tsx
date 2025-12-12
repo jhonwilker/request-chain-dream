@@ -64,7 +64,19 @@ export function TestRunner({ testSuiteId, testSuiteName, requests }: TestRunnerP
       setCurrentIndex(i);
       const request = requests[i];
 
-      const processedUrl = replaceVariables(request.url, currentVariables);
+      let processedUrl = replaceVariables(request.url, currentVariables);
+      
+      // Append query params to URL
+      const params = request.params as Record<string, string> | null;
+      if (params && Object.keys(params).length > 0) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (key) searchParams.append(key, replaceVariables(value, currentVariables));
+        });
+        const separator = processedUrl.includes('?') ? '&' : '?';
+        processedUrl = `${processedUrl}${separator}${searchParams.toString()}`;
+      }
+
       const processedBody = request.body ? replaceVariables(request.body, currentVariables) : null;
 
       const headers: Record<string, string> = { ...request.headers };

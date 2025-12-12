@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { MethodBadge } from './MethodBadge';
 import { HeadersEditor } from './HeadersEditor';
+import { ParametersEditor } from './ParametersEditor';
 import { VariablesEditor } from './VariablesEditor';
 import { ApiRequest } from '@/hooks/useTestSuites';
 import { cn } from '@/lib/utils';
@@ -150,6 +151,12 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
             <HeadersEditor
               headers={localRequest.headers as Record<string, string>}
               onChange={(headers) => updateLocal({ headers })}
+            />
+
+            {/* Query Parameters */}
+            <ParametersEditor
+              params={localRequest.params as Record<string, string>}
+              onChange={(params) => updateLocal({ params })}
             />
 
             {/* Body (for POST, PUT, PATCH) */}

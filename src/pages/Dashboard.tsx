@@ -3,15 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { TestSuiteCard } from '@/components/TestSuiteCard';
 import { CreateTestSuiteDialog } from '@/components/CreateTestSuiteDialog';
 import { RequestEditor } from '@/components/RequestEditor';
 import { TestRunner } from '@/components/TestRunner';
+import { RequestResult } from '@/components/RequestResult';
 import { useAuth } from '@/hooks/useAuth';
 import { useTestSuites, ApiRequest } from '@/hooks/useTestSuites';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { validateExpression, replaceVariables } from '@/lib/jsonpath';
+import { toast } from 'sonner';
+
+interface SingleRunResult {
+  name: string;
+  method: string;
+  url: string;
+  requestData: { headers?: Record<string, string>; body?: unknown };
+  responseData: unknown;
+  responseStatus: number;
+  responseTime: number;
+  validationPassed: boolean | null;
+  validationExpression?: string;
+  validationError?: string;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -29,6 +44,8 @@ export default function Dashboard() {
 
   const [selectedSuiteId, setSelectedSuiteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('editor');
+  const [runningRequestId, setRunningRequestId] = useState<string | null>(null);
+  const [singleResult, setSingleResult] = useState<SingleRunResult | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -45,6 +62,76 @@ export default function Dashboard() {
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
+  };
+
+  const handleRunSingleRequest = async (request: ApiRequest) => {
+    setRunningRequestId(request.id);
+    setSingleResult(null);
+
+    const processedUrl = replaceVariables(request.url, {});
+    const processedBody = request.body ? replaceVariables(request.body, {}) : null;
+
+    const headers: Record<string, string> = { ...(request.headers as Record<string, string>) };
+    if (processedBody && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+
+    const startTime = performance.now();
+
+    try {
+      const response = await fetch(processedUrl, {
+        method: request.method,
+        headers,
+        body: ['POST', 'PUT', 'PATCH'].includes(request.method) && processedBody ? processedBody : undefined,
+      });
+
+      const responseTime = Math.round(performance.now() - startTime);
+      let responseData: unknown;
+      const contentType = response.headers.get('content-type');
+      responseData = contentType?.includes('application/json') ? await response.json() : await response.text();
+
+      const validation = validateExpression(request.validation_expression || '', responseData, response.status);
+
+      const result: SingleRunResult = {
+        name: request.name,
+        method: request.method,
+        url: processedUrl,
+        requestData: { headers, body: processedBody ? JSON.parse(processedBody) : undefined },
+        responseData,
+        responseStatus: response.status,
+        responseTime,
+        validationPassed: request.validation_expression ? validation.passed : null,
+        validationExpression: request.validation_expression || undefined,
+        validationError: validation.error,
+      };
+
+      setSingleResult(result);
+
+      if (result.validationPassed === true) {
+        toast.success(`${request.name} passed!`);
+      } else if (result.validationPassed === false) {
+        toast.error(`${request.name} failed`);
+      } else {
+        toast.info(`${request.name} completed (${response.status})`);
+      }
+    } catch (error) {
+      const responseTime = Math.round(performance.now() - startTime);
+      const result: SingleRunResult = {
+        name: request.name,
+        method: request.method,
+        url: processedUrl,
+        requestData: { headers, body: processedBody ? JSON.parse(processedBody) : undefined },
+        responseData: { error: error instanceof Error ? error.message : 'Request failed' },
+        responseStatus: 0,
+        responseTime,
+        validationPassed: false,
+        validationExpression: request.validation_expression || undefined,
+        validationError: error instanceof Error ? error.message : 'Request failed',
+      };
+
+      setSingleResult(result);
+      toast.error(`${request.name} failed: ${result.validationError}`);
+    } finally {
+      setRunningRequestId(null);
+    }
   };
 
   const selectedSuite = testSuites.find(s => s.id === selectedSuiteId);
@@ -161,6 +248,8 @@ export default function Dashboard() {
                         index={index}
                         onUpdate={(updates) => updateApiRequest(request.id, updates)}
                         onDelete={() => deleteApiRequest(request.id)}
+                        onRun={handleRunSingleRequest}
+                        isRunning={runningRequestId === request.id}
                       />
                     ))}
                     <Button
@@ -171,6 +260,14 @@ export default function Dashboard() {
                       <Plus className="h-4 w-4 mr-2" />
                       Add Request
                     </Button>
+
+                    {/* Single Run Result */}
+                    {singleResult && (
+                      <div className="mt-6 pt-6 border-t border-border">
+                        <h3 className="text-sm font-medium text-muted-foreground mb-4">Last Run Result</h3>
+                        <RequestResult {...singleResult} index={0} />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <TestRunner

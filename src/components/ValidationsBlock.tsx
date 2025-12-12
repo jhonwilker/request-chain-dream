@@ -18,11 +18,11 @@ export const parseValidations = (expression: string | null | undefined): string[
 };
 
 // Helper to convert array back to string for storage
-export const serializeValidations = (validations: string[]): string | null => {
-  const filtered = validations.filter(v => v.trim());
-  if (filtered.length === 0) return null;
-  if (filtered.length === 1) return filtered[0];
-  return JSON.stringify(filtered);
+export const serializeValidations = (validations: string[], filterEmpty: boolean = false): string | null => {
+  const items = filterEmpty ? validations.filter(v => v.trim()) : validations;
+  if (items.length === 0) return null;
+  if (items.length === 1 && filterEmpty) return items[0];
+  return JSON.stringify(items);
 };
 
 interface ValidationsBlockProps {

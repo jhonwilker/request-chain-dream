@@ -26,7 +26,7 @@ export function JsonViewer({ data, label, variant = 'request', className, maxHei
   const labelClass = variant === 'request' ? 'text-request' : 'text-response';
 
   return (
-    <div className={cn('rounded-lg border', bgClass, borderClass, className)}>
+    <div className={cn('rounded-lg border w-full', bgClass, borderClass, className)}>
       <div className="flex items-center justify-between px-3 py-2 border-b border-inherit">
         <button
           onClick={() => setCollapsed(!collapsed)}

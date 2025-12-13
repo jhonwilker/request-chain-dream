@@ -32,7 +32,6 @@ const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRunning, runResult }: RequestEditorProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isResultOpen, setIsResultOpen] = useState(false);
-  const [isRequestDataOpen, setIsRequestDataOpen] = useState(false);
   const [localRequest, setLocalRequest] = useState<ApiRequest>(request);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -59,9 +58,8 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
       onUpdate(localRequest);
       setHasChanges(false);
     }
-    // Collapse result and request data by default on each execution
+    // Collapse result by default on each execution
     setIsResultOpen(false);
-    setIsRequestDataOpen(false);
     onRun?.(localRequest);
   };
   return (
@@ -216,16 +214,11 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                     </button>
                   </CollapsibleTrigger>
 
-                  <CollapsibleContent className="pt-3 space-y-4">
-                    {/* Request - Collapsible */}
-                    <Collapsible open={isRequestDataOpen} onOpenChange={setIsRequestDataOpen}>
-                      <CollapsibleTrigger asChild>
-                        <button className="w-full flex items-center gap-2 hover:bg-muted/50 rounded-md p-2 -mx-2 transition-colors">
-                          {isRequestDataOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          <span className="text-sm font-medium text-muted-foreground">Request</span>
-                        </button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-2">
+                  <CollapsibleContent className="pt-3">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {/* Request */}
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-muted-foreground">Request</h4>
                         <Tabs defaultValue="body" className="w-full">
                           <TabsList className="w-full grid grid-cols-2">
                             <TabsTrigger value="body">Body</TabsTrigger>
@@ -248,34 +241,34 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                             />
                           </TabsContent>
                         </Tabs>
-                      </CollapsibleContent>
-                    </Collapsible>
+                      </div>
 
-                    {/* Response */}
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-muted-foreground">Response</h4>
-                      <Tabs defaultValue="body" className="w-full">
-                        <TabsList className="w-full grid grid-cols-2">
-                          <TabsTrigger value="body">Body</TabsTrigger>
-                          <TabsTrigger value="headers">Headers</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="body" className="mt-2">
-                          <JsonViewer
-                            data={runResult.responseData.body}
-                            label="Body"
-                            variant="response"
-                            maxHeight="200px"
-                          />
-                        </TabsContent>
-                        <TabsContent value="headers" className="mt-2">
-                          <JsonViewer
-                            data={runResult.responseData.headers || {}}
-                            label="Headers"
-                            variant="response"
-                            maxHeight="200px"
-                          />
-                        </TabsContent>
-                      </Tabs>
+                      {/* Response */}
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-muted-foreground">Response</h4>
+                        <Tabs defaultValue="body" className="w-full">
+                          <TabsList className="w-full grid grid-cols-2">
+                            <TabsTrigger value="body">Body</TabsTrigger>
+                            <TabsTrigger value="headers">Headers</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="body" className="mt-2">
+                            <JsonViewer
+                              data={runResult.responseData.body}
+                              label="Body"
+                              variant="response"
+                              maxHeight="200px"
+                            />
+                          </TabsContent>
+                          <TabsContent value="headers" className="mt-2">
+                            <JsonViewer
+                              data={runResult.responseData.headers || {}}
+                              label="Headers"
+                              variant="response"
+                              maxHeight="200px"
+                            />
+                          </TabsContent>
+                        </Tabs>
+                      </div>
                     </div>
 
                     <div className="mt-3">

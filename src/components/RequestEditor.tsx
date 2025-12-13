@@ -57,12 +57,13 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
       onUpdate(localRequest);
       setHasChanges(false);
     }
+    // Collapse result by default on each execution
+    setIsResultOpen(false);
     onRun?.(localRequest);
   };
-
   return (
     <Card className={cn(
-      "border-border/50 bg-card/50 backdrop-blur-sm transition-all",
+      "border-border/50 bg-card/50 backdrop-blur-sm transition-all w-full max-w-full overflow-hidden",
       hasChanges && "ring-2 ring-primary/30"
     )}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -125,7 +126,7 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
         </CardHeader>
 
         <CollapsibleContent>
-          <CardContent className="space-y-4 pt-0">
+          <CardContent className="space-y-4 pt-0 w-full overflow-x-hidden">
             {/* Method & URL */}
             <div className="flex gap-2">
               <Select
@@ -183,7 +184,7 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                   <CollapsibleTrigger asChild>
                     <button className="w-full flex items-center justify-between hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors">
                       <div className="flex items-center gap-2">
-                        {isResultOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                        {isResultOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         <span className="text-sm font-medium text-muted-foreground">Last Run</span>
                         {runResult.validationPassed !== null && (
                           runResult.validationPassed ? (

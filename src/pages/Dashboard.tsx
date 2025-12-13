@@ -262,7 +262,7 @@ export default function Dashboard() {
             <ScrollArea className="flex-1">
               <div className="p-6">
                 {activeTab === 'editor' ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-w-full overflow-x-hidden">
                     {selectedSuite.api_requests?.map((request, index) => (
                       <RequestEditor
                         key={request.id}

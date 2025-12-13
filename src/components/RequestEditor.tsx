@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Trash2, GripVertical, Save, Play, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2, GripVertical, Save, Play, Loader2, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +9,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { MethodBadge } from './MethodBadge';
 import { HeadersEditor } from './HeadersEditor';
 import { ParametersEditor } from './ParametersEditor';
+import { JsonViewer } from './JsonViewer';
+import { ValidationResult } from './ValidationResult';
 import { ApiRequest } from '@/hooks/useTestSuites';
+import { SingleRunResult } from '@/pages/Dashboard';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -20,11 +23,12 @@ interface RequestEditorProps {
   onRun?: (request: ApiRequest) => void;
   index: number;
   isRunning?: boolean;
+  runResult?: SingleRunResult;
 }
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
-export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRunning }: RequestEditorProps) {
+export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRunning, runResult }: RequestEditorProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [localRequest, setLocalRequest] = useState<ApiRequest>(request);
   const [hasChanges, setHasChanges] = useState(false);
@@ -166,7 +170,55 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                   value={localRequest.body || ''}
                   onChange={(e) => updateLocal({ body: e.target.value })}
                   placeholder='{"key": "value"}'
-                  className="font-mono text-sm min-h-[100px]"
+                  className="font-mono text-sm min-h-[100px] max-h-[200px] resize-none"
+                />
+              </div>
+            )}
+
+            {/* Run Result */}
+            {runResult && (
+              <div className="mt-4 pt-4 border-t border-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Last Run</span>
+                    {runResult.validationPassed !== null && (
+                      runResult.validationPassed ? (
+                        <CheckCircle2 className="h-4 w-4 text-success" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-destructive" />
+                      )
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className={cn(
+                      'font-mono font-medium',
+                      runResult.responseStatus >= 200 && runResult.responseStatus < 300 
+                        ? 'text-success' 
+                        : runResult.responseStatus >= 400 
+                          ? 'text-destructive' 
+                          : 'text-warning'
+                    )}>
+                      {runResult.responseStatus}
+                    </span>
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      {runResult.responseTime}ms
+                    </span>
+                  </div>
+                </div>
+
+                <div className="max-h-[300px] overflow-auto">
+                  <JsonViewer
+                    data={runResult.responseData}
+                    label="Response"
+                    variant="response"
+                  />
+                </div>
+
+                <ValidationResult
+                  passed={runResult.validationPassed}
+                  expression={runResult.validationExpression}
+                  error={runResult.validationError}
                 />
               </div>
             )}

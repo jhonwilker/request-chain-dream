@@ -10,7 +10,7 @@ import { RequestEditor } from '@/components/RequestEditor';
 import { ExtractVariablesBlock } from '@/components/ExtractVariablesBlock';
 import { ValidationsBlock } from '@/components/ValidationsBlock';
 import { TestRunner } from '@/components/TestRunner';
-import { RequestResult } from '@/components/RequestResult';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useTestSuites, ApiRequest } from '@/hooks/useTestSuites';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface SingleRunResult {
+export interface SingleRunResult {
   name: string;
   method: string;
   url: string;
@@ -53,7 +53,7 @@ export default function Dashboard() {
   const [selectedSuiteId, setSelectedSuiteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('editor');
   const [runningRequestId, setRunningRequestId] = useState<string | null>(null);
-  const [singleResult, setSingleResult] = useState<SingleRunResult | null>(null);
+  const [requestResults, setRequestResults] = useState<Record<string, SingleRunResult>>({});
   const [showExtractVariables, setShowExtractVariables] = useState(false);
   const [showValidations, setShowValidations] = useState(false);
   const [globalVariables, setGlobalVariables] = useState<Array<{ name: string; path: string }>>([]);
@@ -78,7 +78,6 @@ export default function Dashboard() {
 
   const handleRunSingleRequest = async (request: ApiRequest) => {
     setRunningRequestId(request.id);
-    setSingleResult(null);
 
     let processedUrl = replaceVariables(request.url, {});
     
@@ -126,7 +125,7 @@ export default function Dashboard() {
         validationError: validation.error,
       };
 
-      setSingleResult(result);
+      setRequestResults(prev => ({ ...prev, [request.id]: result }));
 
       if (result.validationPassed === true) {
         toast.success(`${request.name} passed!`);
@@ -150,7 +149,7 @@ export default function Dashboard() {
         validationError: error instanceof Error ? error.message : 'Request failed',
       };
 
-      setSingleResult(result);
+      setRequestResults(prev => ({ ...prev, [request.id]: result }));
       toast.error(`${request.name} failed: ${result.validationError}`);
     } finally {
       setRunningRequestId(null);
@@ -273,6 +272,7 @@ export default function Dashboard() {
                         onDelete={() => deleteApiRequest(request.id)}
                         onRun={handleRunSingleRequest}
                         isRunning={runningRequestId === request.id}
+                        runResult={requestResults[request.id]}
                       />
                     ))}
                     {/* Extract Variables Block */}
@@ -335,13 +335,6 @@ export default function Dashboard() {
                       </DropdownMenu>
                     </div>
 
-                    {/* Single Run Result */}
-                    {singleResult && (
-                      <div className="mt-6 pt-6 border-t border-border">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-4">Last Run Result</h3>
-                        <RequestResult {...singleResult} index={0} />
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <TestRunner

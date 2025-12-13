@@ -30,6 +30,7 @@ const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRunning, runResult }: RequestEditorProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const [isResultOpen, setIsResultOpen] = useState(false);
   const [localRequest, setLocalRequest] = useState<ApiRequest>(request);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -66,7 +67,7 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
     )}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
             <span className="text-sm font-medium text-muted-foreground w-6">
               #{index + 1}
@@ -76,9 +77,9 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
               value={localRequest.name}
               onChange={(e) => updateLocal({ name: e.target.value })}
               placeholder="Request name"
-              className="flex-1 h-8 text-sm font-medium border-0 bg-transparent px-0 focus-visible:ring-0"
+              className="flex-1 min-w-[120px] h-8 text-sm font-medium border-0 bg-transparent px-0 focus-visible:ring-0"
             />
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
               {hasChanges && (
                 <Button
                   variant="default"
@@ -177,50 +178,57 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
 
             {/* Run Result */}
             {runResult && (
-              <div className="mt-4 pt-4 border-t border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Last Run</span>
-                    {runResult.validationPassed !== null && (
-                      runResult.validationPassed ? (
-                        <CheckCircle2 className="h-4 w-4 text-success" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-destructive" />
-                      )
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className={cn(
-                      'font-mono font-medium',
-                      runResult.responseStatus >= 200 && runResult.responseStatus < 300 
-                        ? 'text-success' 
-                        : runResult.responseStatus >= 400 
-                          ? 'text-destructive' 
-                          : 'text-warning'
-                    )}>
-                      {runResult.responseStatus}
-                    </span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      {runResult.responseTime}ms
-                    </span>
-                  </div>
-                </div>
+              <Collapsible open={isResultOpen} onOpenChange={setIsResultOpen}>
+                <div className="mt-4 pt-4 border-t border-border">
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full flex items-center justify-between hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors">
+                      <div className="flex items-center gap-2">
+                        {isResultOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                        <span className="text-sm font-medium text-muted-foreground">Last Run</span>
+                        {runResult.validationPassed !== null && (
+                          runResult.validationPassed ? (
+                            <CheckCircle2 className="h-4 w-4 text-success" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          )
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className={cn(
+                          'font-mono font-medium',
+                          runResult.responseStatus >= 200 && runResult.responseStatus < 300 
+                            ? 'text-success' 
+                            : runResult.responseStatus >= 400 
+                              ? 'text-destructive' 
+                              : 'text-warning'
+                        )}>
+                          {runResult.responseStatus}
+                        </span>
+                        <span className="flex items-center gap-1 text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5" />
+                          {runResult.responseTime}ms
+                        </span>
+                      </div>
+                    </button>
+                  </CollapsibleTrigger>
 
-                <div className="max-h-[300px] overflow-auto">
-                  <JsonViewer
-                    data={runResult.responseData}
-                    label="Response"
-                    variant="response"
-                  />
-                </div>
+                  <CollapsibleContent className="pt-3 space-y-3">
+                    <div className="max-h-[300px] overflow-auto">
+                      <JsonViewer
+                        data={runResult.responseData}
+                        label="Response"
+                        variant="response"
+                      />
+                    </div>
 
-                <ValidationResult
-                  passed={runResult.validationPassed}
-                  expression={runResult.validationExpression}
-                  error={runResult.validationError}
-                />
-              </div>
+                    <ValidationResult
+                      passed={runResult.validationPassed}
+                      expression={runResult.validationExpression}
+                      error={runResult.validationError}
+                    />
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
             )}
 
           </CardContent>

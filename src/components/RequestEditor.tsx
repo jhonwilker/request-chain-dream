@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MethodBadge } from './MethodBadge';
 import { HeadersEditor } from './HeadersEditor';
 import { ParametersEditor } from './ParametersEditor';
@@ -213,48 +214,70 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                     </button>
                   </CollapsibleTrigger>
 
-                  <CollapsibleContent className="pt-3 space-y-3">
-                    <div className="grid gap-3 md:grid-cols-2">
+                  <CollapsibleContent className="pt-3">
+                    <div className="grid gap-4 md:grid-cols-2">
                       {/* Request */}
                       <div className="space-y-2">
-                        <JsonViewer
-                          data={runResult.requestData.headers}
-                          label="Request Headers"
-                          variant="request"
-                          maxHeight="150px"
-                        />
-                        {runResult.requestData.body && (
-                          <JsonViewer
-                            data={runResult.requestData.body}
-                            label="Request Body"
-                            variant="request"
-                            maxHeight="150px"
-                          />
-                        )}
+                        <h4 className="text-sm font-medium text-muted-foreground">Request</h4>
+                        <Tabs defaultValue="body" className="w-full">
+                          <TabsList className="w-full grid grid-cols-2">
+                            <TabsTrigger value="body">Body</TabsTrigger>
+                            <TabsTrigger value="headers">Headers</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="body" className="mt-2">
+                            <JsonViewer
+                              data={runResult.requestData.body || {}}
+                              label="Body"
+                              variant="request"
+                              maxHeight="200px"
+                            />
+                          </TabsContent>
+                          <TabsContent value="headers" className="mt-2">
+                            <JsonViewer
+                              data={runResult.requestData.headers || {}}
+                              label="Headers"
+                              variant="request"
+                              maxHeight="200px"
+                            />
+                          </TabsContent>
+                        </Tabs>
                       </div>
 
                       {/* Response */}
                       <div className="space-y-2">
-                        <JsonViewer
-                          data={runResult.responseData.headers}
-                          label="Response Headers"
-                          variant="response"
-                          maxHeight="150px"
-                        />
-                        <JsonViewer
-                          data={runResult.responseData.body}
-                          label="Response Body"
-                          variant="response"
-                          maxHeight="200px"
-                        />
+                        <h4 className="text-sm font-medium text-muted-foreground">Response</h4>
+                        <Tabs defaultValue="body" className="w-full">
+                          <TabsList className="w-full grid grid-cols-2">
+                            <TabsTrigger value="body">Body</TabsTrigger>
+                            <TabsTrigger value="headers">Headers</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="body" className="mt-2">
+                            <JsonViewer
+                              data={runResult.responseData.body}
+                              label="Body"
+                              variant="response"
+                              maxHeight="200px"
+                            />
+                          </TabsContent>
+                          <TabsContent value="headers" className="mt-2">
+                            <JsonViewer
+                              data={runResult.responseData.headers || {}}
+                              label="Headers"
+                              variant="response"
+                              maxHeight="200px"
+                            />
+                          </TabsContent>
+                        </Tabs>
                       </div>
                     </div>
 
-                    <ValidationResult
-                      passed={runResult.validationPassed}
-                      expression={runResult.validationExpression}
-                      error={runResult.validationError}
-                    />
+                    <div className="mt-3">
+                      <ValidationResult
+                        passed={runResult.validationPassed}
+                        expression={runResult.validationExpression}
+                        error={runResult.validationError}
+                      />
+                    </div>
                   </CollapsibleContent>
                 </div>
               </Collapsible>

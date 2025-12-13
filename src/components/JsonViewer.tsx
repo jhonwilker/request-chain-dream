@@ -53,7 +53,7 @@ export function JsonViewer({ data, label, variant = 'request', className, maxHei
           className="p-3 overflow-auto scrollbar-thin"
           style={{ maxHeight }}
         >
-          <pre className="json-viewer text-foreground">
+          <pre className="json-viewer text-foreground whitespace-pre-wrap break-words">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>

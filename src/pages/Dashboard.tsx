@@ -28,7 +28,7 @@ export interface SingleRunResult {
   method: string;
   url: string;
   requestData: { headers?: Record<string, string>; body?: unknown };
-  responseData: unknown;
+  responseData: { headers?: Record<string, string>; body?: unknown };
   responseStatus: number;
   responseTime: number;
   validationPassed: boolean | null;
@@ -106,18 +106,26 @@ export default function Dashboard() {
       });
 
       const responseTime = Math.round(performance.now() - startTime);
-      let responseData: unknown;
-      const contentType = response.headers.get('content-type');
-      responseData = contentType?.includes('application/json') ? await response.json() : await response.text();
+      
+      // Capture response headers
+      const responseHeaders: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        responseHeaders[key] = value;
+      });
 
-      const validation = validateExpression(request.validation_expression || '', responseData, response.status);
+      // Parse response body
+      const contentType = response.headers.get('content-type');
+      let responseBody: unknown;
+      responseBody = contentType?.includes('application/json') ? await response.json() : await response.text();
+
+      const validation = validateExpression(request.validation_expression || '', responseBody, response.status);
 
       const result: SingleRunResult = {
         name: request.name,
         method: request.method,
         url: processedUrl,
         requestData: { headers, body: processedBody ? JSON.parse(processedBody) : undefined },
-        responseData,
+        responseData: { headers: responseHeaders, body: responseBody },
         responseStatus: response.status,
         responseTime,
         validationPassed: request.validation_expression ? validation.passed : null,
@@ -141,7 +149,7 @@ export default function Dashboard() {
         method: request.method,
         url: processedUrl,
         requestData: { headers, body: processedBody ? JSON.parse(processedBody) : undefined },
-        responseData: { error: error instanceof Error ? error.message : 'Request failed' },
+        responseData: { headers: {}, body: { error: error instanceof Error ? error.message : 'Request failed' } },
         responseStatus: 0,
         responseTime,
         validationPassed: false,

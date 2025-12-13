@@ -214,12 +214,40 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                   </CollapsibleTrigger>
 
                   <CollapsibleContent className="pt-3 space-y-3">
-                    <div className="max-h-[300px] overflow-auto">
-                      <JsonViewer
-                        data={runResult.responseData}
-                        label="Response"
-                        variant="response"
-                      />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {/* Request */}
+                      <div className="space-y-2">
+                        <JsonViewer
+                          data={runResult.requestData.headers}
+                          label="Request Headers"
+                          variant="request"
+                          maxHeight="150px"
+                        />
+                        {runResult.requestData.body && (
+                          <JsonViewer
+                            data={runResult.requestData.body}
+                            label="Request Body"
+                            variant="request"
+                            maxHeight="150px"
+                          />
+                        )}
+                      </div>
+
+                      {/* Response */}
+                      <div className="space-y-2">
+                        <JsonViewer
+                          data={runResult.responseData.headers}
+                          label="Response Headers"
+                          variant="response"
+                          maxHeight="150px"
+                        />
+                        <JsonViewer
+                          data={runResult.responseData.body}
+                          label="Response Body"
+                          variant="response"
+                          maxHeight="200px"
+                        />
+                      </div>
                     </div>
 
                     <ValidationResult

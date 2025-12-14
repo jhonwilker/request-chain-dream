@@ -50,11 +50,14 @@ export default function Auth() {
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Invalid email or password');
+      } else if (error.message.includes('Request rate limit')) {
+        toast.error('Muitos pedidos de login em sequência. Aguarde alguns segundos e tente novamente.');
       } else {
         toast.error(error.message);
       }
     } else {
       toast.success('Welcome back!');
+      navigate('/dashboard');
     }
   };
 
@@ -69,14 +72,16 @@ export default function Auth() {
     if (error) {
       if (error.message.includes('already registered')) {
         toast.error('This email is already registered. Try signing in instead.');
+      } else if (error.message.includes('Request rate limit')) {
+        toast.error('Muitos pedidos de cadastro em sequência. Aguarde alguns segundos e tente novamente.');
       } else {
         toast.error(error.message);
       }
     } else {
       toast.success('Account created! You are now signed in.');
+      navigate('/dashboard');
     }
   };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

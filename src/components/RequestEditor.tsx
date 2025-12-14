@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MethodBadge } from './MethodBadge';
 import { HeadersEditor } from './HeadersEditor';
 import { ParametersEditor } from './ParametersEditor';
+import { ValidationsEditor } from './ValidationsEditor';
 import { JsonViewer } from './JsonViewer';
 import { ValidationResult } from './ValidationResult';
 import { ApiRequest } from '@/hooks/useTestSuites';
@@ -177,6 +178,12 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                 />
               </div>
             )}
+
+            {/* Validations */}
+            <ValidationsEditor
+              validations={localRequest.validation_expression ? localRequest.validation_expression.split('&&').map(v => v.trim()) : []}
+              onChange={(validations) => updateLocal({ validation_expression: validations.filter(v => v.trim()).join(' && ') })}
+            />
 
             {/* Run Result */}
             {runResult && (

@@ -183,7 +183,12 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
 
             {/* Validations */}
             <ValidationsEditor
-              validations={localRequest.validation_expression ? localRequest.validation_expression.split('&&').map(v => v.trim()).filter(v => v) : []}
+              validations={
+                localRequest.validation_expression !== null &&
+                localRequest.validation_expression !== undefined
+                  ? localRequest.validation_expression.split('&&').map(v => v.trim())
+                  : []
+              }
               onChange={(validations) => updateLocal({ validation_expression: validations.join(' && ') })}
             />
 

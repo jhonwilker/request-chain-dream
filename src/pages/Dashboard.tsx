@@ -12,8 +12,9 @@ import { TestRunner } from '@/components/TestRunner';
 import { useAuth } from '@/hooks/useAuth';
 import { useTestSuites, ApiRequest } from '@/hooks/useTestSuites';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { validateExpression, replaceVariables } from '@/lib/jsonpath';
+import { validateExpression, replaceVariables, extractVariables } from '@/lib/jsonpath';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 export interface SingleRunResult {
   name: string;
@@ -46,6 +47,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('editor');
   const [runningRequestId, setRunningRequestId] = useState<string | null>(null);
   const [requestResults, setRequestResults] = useState<Record<string, SingleRunResult>>({});
+  const [extractedVariables, setExtractedVariables] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -67,24 +69,24 @@ export default function Dashboard() {
   const handleRunSingleRequest = async (request: ApiRequest) => {
     setRunningRequestId(request.id);
 
-    let processedUrl = replaceVariables(request.url, {});
+    let processedUrl = replaceVariables(request.url, extractedVariables);
     
     // Append query params to URL
     if (request.params && Object.keys(request.params).length > 0) {
       const searchParams = new URLSearchParams();
       Object.entries(request.params).forEach(([key, value]) => {
-        if (key) searchParams.append(key, replaceVariables(value, {}));
+        if (key) searchParams.append(key, replaceVariables(value, extractedVariables));
       });
       const separator = processedUrl.includes('?') ? '&' : '?';
       processedUrl = `${processedUrl}${separator}${searchParams.toString()}`;
     }
 
-    const processedBody = request.body ? replaceVariables(request.body, {}) : null;
+    const processedBody = request.body ? replaceVariables(request.body, extractedVariables) : null;
 
     const headers: Record<string, string> = {};
     if (request.headers) {
       Object.entries(request.headers as Record<string, string>).forEach(([key, value]) => {
-        headers[key] = replaceVariables(value, {});
+        headers[key] = replaceVariables(value, extractedVariables);
       });
     }
     if (processedBody && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
@@ -110,6 +112,13 @@ export default function Dashboard() {
       const contentType = response.headers.get('content-type');
       let responseBody: unknown;
       responseBody = contentType?.includes('application/json') ? await response.json() : await response.text();
+
+      // Extract variables from response
+      const variablesToExtract = (request.variables_to_extract as Array<{ name: string; path: string }>) || [];
+      if (variablesToExtract.length > 0) {
+        const newVars = extractVariables(responseBody, variablesToExtract);
+        setExtractedVariables(prev => ({ ...prev, ...newVars }));
+      }
 
       const validation = validateExpression(request.validation_expression || '', responseBody, response.status);
 
@@ -264,6 +273,34 @@ export default function Dashboard() {
               <div className="p-6">
                 {activeTab === 'editor' ? (
                   <div className="space-y-4 max-w-full overflow-x-hidden">
+                    {/* Extracted Variables Panel */}
+                    {Object.keys(extractedVariables).length > 0 && (
+                      <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-medium text-foreground">Extracted Variables</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setExtractedVariables({})}
+                            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                          >
+                            Clear All
+                          </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(extractedVariables).map(([name, value]) => (
+                            <Badge key={name} variant="secondary" className="font-mono text-xs">
+                              <span className="text-primary">{`{{${name}}}`}</span>
+                              <span className="mx-1 text-muted-foreground">=</span>
+                              <span className="max-w-[200px] truncate">
+                                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                              </span>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {selectedSuite.api_requests?.map((request, index) => (
                       <RequestEditor
                         key={request.id}

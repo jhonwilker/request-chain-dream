@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Loader2, Variable, CheckCircle } from 'lucide-react';
+import { Plus, LogOut, Loader2, Variable } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -8,7 +8,6 @@ import { TestSuiteCard } from '@/components/TestSuiteCard';
 import { CreateTestSuiteDialog } from '@/components/CreateTestSuiteDialog';
 import { RequestEditor } from '@/components/RequestEditor';
 import { ExtractVariablesBlock } from '@/components/ExtractVariablesBlock';
-import { ValidationsBlock } from '@/components/ValidationsBlock';
 import { TestRunner } from '@/components/TestRunner';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -16,12 +15,6 @@ import { useTestSuites, ApiRequest } from '@/hooks/useTestSuites';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { validateExpression, replaceVariables } from '@/lib/jsonpath';
 import { toast } from 'sonner';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export interface SingleRunResult {
   name: string;
@@ -55,9 +48,7 @@ export default function Dashboard() {
   const [runningRequestId, setRunningRequestId] = useState<string | null>(null);
   const [requestResults, setRequestResults] = useState<Record<string, SingleRunResult>>({});
   const [showExtractVariables, setShowExtractVariables] = useState(false);
-  const [showValidations, setShowValidations] = useState(false);
   const [globalVariables, setGlobalVariables] = useState<Array<{ name: string; path: string }>>([]);
-  const [globalValidationExpression, setGlobalValidationExpression] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -295,18 +286,6 @@ export default function Dashboard() {
                       />
                     )}
 
-                    {/* Validations Block */}
-                    {showValidations && (
-                      <ValidationsBlock
-                        validationExpression={globalValidationExpression}
-                        onChange={setGlobalValidationExpression}
-                        onDelete={() => {
-                          setShowValidations(false);
-                          setGlobalValidationExpression(null);
-                        }}
-                      />
-                    )}
-
                     {/* Add Buttons */}
                     <div className="flex gap-2">
                       <Button
@@ -317,30 +296,16 @@ export default function Dashboard() {
                         <Plus className="h-4 w-4 mr-2" />
                         Add Request
                       </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="border-dashed">
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Block
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => setShowExtractVariables(true)}
-                            disabled={showExtractVariables}
-                          >
-                            <Variable className="h-4 w-4 mr-2" />
-                            Extract Variables
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setShowValidations(true)}
-                            disabled={showValidations}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Validations
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {!showExtractVariables && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowExtractVariables(true)}
+                          className="border-dashed"
+                        >
+                          <Variable className="h-4 w-4 mr-2" />
+                          Extract Variables
+                        </Button>
+                      )}
                     </div>
 
                   </div>

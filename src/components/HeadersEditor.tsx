@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { HighlightedInput } from './HighlightedInput';
 
 interface HeadersEditorProps {
   headers: Record<string, string>;
@@ -57,11 +58,11 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
                 onChange={(e) => updateHeader(key, e.target.value, value)}
                 className="flex-1 h-9 text-sm font-mono"
               />
-              <Input
+              <HighlightedInput
                 placeholder="Value"
                 value={value}
                 onChange={(e) => updateHeader(key, key, e.target.value)}
-                className="flex-1 h-9 text-sm font-mono"
+                className="flex-1 h-9 text-sm"
               />
               <Button
                 type="button"

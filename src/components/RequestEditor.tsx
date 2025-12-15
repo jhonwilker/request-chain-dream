@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { HighlightedInput } from './HighlightedInput';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -147,11 +148,11 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
                   ))}
                 </SelectContent>
               </Select>
-              <Input
+              <HighlightedInput
                 value={localRequest.url}
                 onChange={(e) => updateLocal({ url: e.target.value })}
                 placeholder="https://api.example.com/endpoint or {{baseUrl}}/endpoint"
-                className="flex-1 font-mono text-sm"
+                className="flex-1 text-sm"
               />
             </div>
 

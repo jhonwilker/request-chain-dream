@@ -11,6 +11,7 @@ import { MethodBadge } from './MethodBadge';
 import { HeadersEditor } from './HeadersEditor';
 import { ParametersEditor } from './ParametersEditor';
 import { ValidationsEditor } from './ValidationsEditor';
+import { VariablesEditor } from './VariablesEditor';
 import { JsonViewer } from './JsonViewer';
 import { ValidationResult } from './ValidationResult';
 import { ApiRequest } from '@/hooks/useTestSuites';
@@ -183,6 +184,12 @@ export function RequestEditor({ request, onUpdate, onDelete, onRun, index, isRun
             <ValidationsEditor
               validations={localRequest.validation_expression ? localRequest.validation_expression.split('&&').map(v => v.trim()) : []}
               onChange={(validations) => updateLocal({ validation_expression: validations.filter(v => v.trim()).join(' && ') })}
+            />
+
+            {/* Response Variable Mapping */}
+            <VariablesEditor
+              variables={(localRequest.variables_to_extract as Array<{ name: string; path: string }>) || []}
+              onChange={(variables) => updateLocal({ variables_to_extract: variables })}
             />
 
             {/* Run Result */}

@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Loader2, Variable } from 'lucide-react';
+import { Plus, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { TestSuiteCard } from '@/components/TestSuiteCard';
 import { CreateTestSuiteDialog } from '@/components/CreateTestSuiteDialog';
 import { RequestEditor } from '@/components/RequestEditor';
-import { ExtractVariablesBlock } from '@/components/ExtractVariablesBlock';
 import { TestRunner } from '@/components/TestRunner';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -47,8 +46,6 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('editor');
   const [runningRequestId, setRunningRequestId] = useState<string | null>(null);
   const [requestResults, setRequestResults] = useState<Record<string, SingleRunResult>>({});
-  const [showExtractVariables, setShowExtractVariables] = useState(false);
-  const [globalVariables, setGlobalVariables] = useState<Array<{ name: string; path: string }>>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -274,39 +271,16 @@ export default function Dashboard() {
                         runResult={requestResults[request.id]}
                       />
                     ))}
-                    {/* Extract Variables Block */}
-                    {showExtractVariables && (
-                      <ExtractVariablesBlock
-                        variables={globalVariables}
-                        onChange={setGlobalVariables}
-                        onDelete={() => {
-                          setShowExtractVariables(false);
-                          setGlobalVariables([]);
-                        }}
-                      />
-                    )}
 
-                    {/* Add Buttons */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => addApiRequest(selectedSuite.id, { name: 'New Request' })}
-                        className="flex-1 border-dashed"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Request
-                      </Button>
-                      {!showExtractVariables && (
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowExtractVariables(true)}
-                          className="border-dashed"
-                        >
-                          <Variable className="h-4 w-4 mr-2" />
-                          Extract Variables
-                        </Button>
-                      )}
-                    </div>
+                    {/* Add Request Button */}
+                    <Button
+                      variant="outline"
+                      onClick={() => addApiRequest(selectedSuite.id, { name: 'New Request' })}
+                      className="w-full border-dashed"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Request
+                    </Button>
 
                   </div>
                 ) : (

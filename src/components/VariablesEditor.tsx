@@ -30,7 +30,7 @@ export function VariablesEditor({ variables, onChange }: VariablesEditorProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-foreground">Extract Variables</label>
+        <label className="text-sm font-medium text-foreground">Response Variable Mapping</label>
         <Button
           type="button"
           variant="outline"

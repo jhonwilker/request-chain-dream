@@ -81,7 +81,12 @@ export default function Dashboard() {
 
     const processedBody = request.body ? replaceVariables(request.body, {}) : null;
 
-    const headers: Record<string, string> = { ...(request.headers as Record<string, string>) };
+    const headers: Record<string, string> = {};
+    if (request.headers) {
+      Object.entries(request.headers as Record<string, string>).forEach(([key, value]) => {
+        headers[key] = replaceVariables(value, {});
+      });
+    }
     if (processedBody && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
 
     const startTime = performance.now();

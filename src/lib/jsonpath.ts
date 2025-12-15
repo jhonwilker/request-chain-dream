@@ -22,16 +22,17 @@ export function validateExpression(
   try {
     let processedExpression = expression;
     
+    // Replace status keyword first (before JSONPath processing)
+    processedExpression = processedExpression.replace(/\bstatus\b/g, String(statusCode));
+    
     const jsonPathRegex = /\$\.[\w.\[\]]+/g;
-    const matches = expression.match(jsonPathRegex) || [];
+    const matches = processedExpression.match(jsonPathRegex) || [];
     
     for (const match of matches) {
       const result = evaluateJsonPath(responseData, match);
       const replacement = JSON.stringify(result);
       processedExpression = processedExpression.replace(match, replacement);
     }
-
-    processedExpression = processedExpression.replace(/\bstatus\b/g, String(statusCode));
 
     const evalFunc = new Function('context', `
       with (context) {
